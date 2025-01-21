@@ -29,28 +29,47 @@ A multi-line zsh theme with Git integration and command status indicators.
 
 ## Installation
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/jmaaltech/jmtech-zsh-theme.git
-   cd jmtech-zsh-theme
-   ```
+### Using Oh My Zsh
 
-2. Run the installation script:
-   ```bash
-   ./scripts/install.sh
-   ```
+1. Clone the repository into Oh My Zsh custom themes directory:
+```bash
+git clone https://github.com/jmaaltech/jmtech-zsh-theme.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/jmtech
+```
 
-3. Set the following in your ~/.zshrc:
-   ```bash
-   ZSH_THEME="jmtech"
-   ```
-   
-   **Note: For terminals without Nerd Fonts, add `export JMTECH_USE_NERD_FONTS="false"` before the theme setting**
+2. Set up theme files:
+```bash
+ln -sf ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/jmtech/src/jmtech.zsh-theme ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/
+```
 
-4. Restart your terminal or reload your cofiguration:
-   ```bash
-   source ~/.zshrc
-   ```
+3. Add to your ~/.zshrc:
+```bash
+ZSH_THEME="jmtech"
+```
+
+### Manual Installation
+
+1. Clone the repository to your preferred location:
+```bash
+git clone https://github.com/jmaaltech/jmtech-zsh-theme.git ~/.local/share/zsh/jmtech
+cd ~/.local/share/zsh/jmtech
+```
+
+2. Install the theme:
+```bash
+./scripts/install.sh
+```
+
+## Post-Installation
+
+**Optional**: For terminals without Nerd Fonts, add this to your ~/.zshrc before the theme setting:
+```bash
+export JMTECH_USE_NERD_FONTS="false"
+```
+
+Then, reload your configuration:
+```bash
+source ~/.zshrc
+```
 
 ## Customization
 
