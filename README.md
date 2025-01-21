@@ -19,7 +19,9 @@ A multi-line zsh theme with Git integration and command status indicators.
 
 ## Preview
 
-![JMTech Zsh Theme Screenshot](docs/screenshots/jmtech-zsh-theme-1.png)
+![JMTech Zsh Theme Screenshot 1](docs/screenshots/jmtech-zsh-theme-1.png)
+![JMTech Zsh Theme Screenshot 2](docs/screenshots/jmtech-zsh-theme-2.png)
+![JMTech Zsh Theme Screenshot 3](docs/screenshots/jmtech-zsh-theme-3.png)
 
 ## Requirements
 
