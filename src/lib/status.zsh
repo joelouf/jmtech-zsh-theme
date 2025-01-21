@@ -9,7 +9,6 @@ function _jmtech_print_status() {
         
         (( spacing < 1 )) && spacing=1
         print -P "%{${(l:$spacing:: :)}%}${marker}"
-        print ""
         
         JMTECH_PROMPT[cmd_executed]=0
     fi
