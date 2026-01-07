@@ -1,3 +1,40 @@
+# Cross-platform timeout wrapper to prevent hanging commands.
+function _jmtech_with_timeout() {
+    local timeout_sec=$1
+    shift
+    
+    # Try native timeout commands first.
+    if command -v timeout &>/dev/null; then
+        # Linux coreutils / Windows Git Bash.
+        timeout "${timeout_sec}s" "$@" 2>/dev/null
+        return $?
+    elif command -v gtimeout &>/dev/null; then
+        # macOS with Homebrew coreutils.
+        gtimeout "${timeout_sec}s" "$@" 2>/dev/null
+        return $?
+    fi
+    
+    # POSIX fallback using background process with kill.
+    (
+        "$@" &
+        local cmd_pid=$!
+        
+        (
+            sleep "$timeout_sec"
+            kill "$cmd_pid" 2>/dev/null
+        ) &
+        local killer_pid=$!
+        
+        wait "$cmd_pid" 2>/dev/null
+        local exit_status=$?
+        
+        kill "$killer_pid" 2>/dev/null
+        wait "$killer_pid" 2>/dev/null
+        
+        return $exit_status
+    )
+}
+
 function _jmtech_strlen() {
     local string="$1"
 

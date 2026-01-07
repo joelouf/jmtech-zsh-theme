@@ -113,6 +113,9 @@ function _jmtech_cached_git_ahead_behind() {
 }
 
 function _jmtech_cached_git_signing() {
+    # Skip entirely if feature is disabled.
+    [[ "${JMTECH_SHOW_GPG_STATUS:-true}" != "true" ]] && return
+
     local repo_path
     repo_path=$(git rev-parse --git-dir 2>/dev/null) || return
     local cache_key="signing:$repo_path"
@@ -125,8 +128,15 @@ function _jmtech_cached_git_signing() {
 
     local auto_sign
     auto_sign="$(git config --get commit.gpgSign 2>/dev/null)"
-    local head_sig
-    head_sig="$(git log -1 --pretty='%G?' HEAD 2>/dev/null)"
+    
+    # Use timeout to prevent GPG agent hangs within non-interactive shells.
+    local head_sig=""
+    local timeout_sec="${JMTECH_GPG_TIMEOUT:-1}"
+    
+    head_sig="$(_jmtech_with_timeout "$timeout_sec" git log -1 --pretty='%G?' HEAD 2>/dev/null)" || head_sig=""
+    
+    # Clean up whitespace/newlines from output.
+    head_sig="${head_sig//[$'\t\r\n ']}"
     
     local result="$auto_sign $head_sig"
     _set_cache "$cache_key" "$result"
@@ -175,11 +185,15 @@ function _jmtech_git_info() {
     local git_ahead=${ahead_behind[1]}
     local git_behind=${ahead_behind[2]}
 
-    # Get signing info
-    local signing_info
-    signing_info=($(_jmtech_cached_git_signing))
-    local auto_sign=${signing_info[1]}
-    local head_sig=${signing_info[2]}
+    # Get signing info (optional - can be disabled).
+    local auto_sign=""
+    local head_sig=""
+    if [[ "${JMTECH_SHOW_GPG_STATUS:-true}" == "true" ]]; then
+        local signing_info
+        signing_info=($(_jmtech_cached_git_signing))
+        auto_sign=${signing_info[1]}
+        head_sig=${signing_info[2]}
+    fi
 
     # Build status string.
     local result=""
@@ -194,15 +208,18 @@ function _jmtech_git_info() {
     (( git_behind > 0 )) && result+=" ${JMTECH_COLOR[c_magenta]}${JMTECH_GIT[s_behind]}${git_behind}${JMTECH_COLOR[c_reset]}"
     (( git_ahead > 0 )) && result+=" ${JMTECH_COLOR[c_magenta]}${JMTECH_GIT[s_ahead]}${git_ahead}${JMTECH_COLOR[c_reset]}"
 
-    if [[ -n "$head_sig" ]]; then
+    # GPG signature status (if enabled and available).
+    if [[ "${JMTECH_SHOW_GPG_STATUS:-true}" == "true" && -n "$head_sig" ]]; then
         case "$head_sig" in
             G)       result+=" ${JMTECH_COLOR[c_green]}${JMTECH_GIT[s_gpg_good]}${JMTECH_COLOR[c_reset]}" ;;
             B|R)     result+=" ${JMTECH_COLOR[c_red]}${JMTECH_GIT[s_gpg_bad]}${JMTECH_COLOR[c_reset]}" ;;
             U|X|Y|E) result+=" ${JMTECH_COLOR[c_yellow]}${JMTECH_GIT[s_gpg_unknown]}${JMTECH_COLOR[c_reset]}" ;;
+            # N = no signature, skip display.
+            # Empty/timeout = skip display.
         esac
     fi
 
-    if [[ "$auto_sign" == "true" ]]; then
+    if [[ "${JMTECH_SHOW_GPG_STATUS:-true}" == "true" && "$auto_sign" == "true" ]]; then
         result+=" ${JMTECH_COLOR[c_cyan]}${JMTECH_GIT[s_auto_sign]}${JMTECH_COLOR[c_reset]}"
     fi
 

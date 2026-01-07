@@ -64,3 +64,7 @@ fi
 # Cache config.
 typeset -gA JMTECH_CACHE
 JMTECH_CACHE[timeout]=5
+
+# GPG Status Configuration
+: ${JMTECH_SHOW_GPG_STATUS:=true}
+: ${JMTECH_GPG_TIMEOUT:=1}
